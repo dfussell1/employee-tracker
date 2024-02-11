@@ -63,7 +63,7 @@ const mainMenu = () => {
                     updateEmployeeRole();
                     break;
                 case "Quit":
-                    console.log("Quitting...");
+                    console.log("Exiting database...");
                     db.end();
                     break;
             };
@@ -103,7 +103,22 @@ const viewAllEmployees = () => {
 };
 
 const addDepartment = () => {
-
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "departmentName",
+                message: "What is the name of the department you would like to add?"
+            }
+        ])
+        .then((answer) => {
+            db.query("INSERT INTO department (name) VALUES (?)", [answer.departmentName], (err, res) => {
+                if (err) {
+                    console.log("Cannot add department.");
+                } else console.log("Department added successfully!");
+                mainMenu();
+            });
+        });
 };
 
 const addEmployee = () => {
