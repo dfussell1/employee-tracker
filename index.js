@@ -66,6 +66,16 @@ const mainMenu = () => {
                     console.log("Quitting...");
                     db.end();
                     break;
-            }
+            };
         });
-}
+};
+
+const viewAllDepartments = () => {
+    db.query("SELECT * from department", (err, departments) => {
+        if (err) {
+            console.log("Cannot get departments.");
+        }
+        console.table(departments);
+        mainMenu();
+    });
+};
