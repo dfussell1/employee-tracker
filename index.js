@@ -80,8 +80,9 @@ const viewAllDepartments = () => {
     });
 };
 
+// job title, role id, department, salary
 const viewAllRoles = () => {
-    db.query("SELECT * FROM role", (err, roles) => {
+    db.query("SELECT role.title, role.id, department.name AS department, role.salary FROM role JOIN department ON role.department_id = department.id", (err, roles) => {
         if (err) {
             console.log("Cannot get roles.");
         }
@@ -90,8 +91,9 @@ const viewAllRoles = () => {
     });
 };
 
+// id, first and last name, job title, department, salaries, and managers reported to
 const viewAllEmployees = () => {
-    db.query("SELECT * FROM employee", (err, employees) => {
+    db.query("SELECT employee.id, employee.first_name, employee.last_name, role.title AS title, department.name AS department, role.salary AS salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee AS manager ON employee.manager_id = manager.id", (err, employees) => {
         if (err) {
             console.log("Cannot get employees.");
         } 
@@ -100,3 +102,18 @@ const viewAllEmployees = () => {
     });
 };
 
+const addDepartment = () => {
+
+};
+
+const addEmployee = () => {
+
+};
+
+const addEmployeeRole = () => {
+
+};
+
+const updateEmployeeRole = () => {
+
+};

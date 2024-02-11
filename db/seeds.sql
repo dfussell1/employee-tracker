@@ -21,8 +21,8 @@ VALUES
     ("Cee", "Ayeo", 1, NULL),
     ("James", "Better", 2, 1),
     ("Eric", "Cartman", 3, NULL),
-    ("Ben", "Tin", 4, 2),
+    ("Ben", "Tin", 4, 3),
     ("Michael", "Long", 5, NULL),
-    ("Mallory", "Keeps", 6, 3),
+    ("Mallory", "Keeps", 6, 5),
     ("Meredith", "Ray", 7, NULL),
-    ("Sarah", "Thomas", 8, 4);
+    ("Sarah", "Thomas", 8, 7);
