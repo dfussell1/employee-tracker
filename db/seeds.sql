@@ -10,7 +10,7 @@ VALUES
     ("CEO", 150000, 1),
     ("Building Supervisor", 120000, 1),
     ("Sales Manager", 90000, 2),
-    ("Sales Associate", 75000, 2)
+    ("Sales Associate", 75000, 2),
     ("IT Manager", 100000, 3),
     ("IT Associate", 80000, 3),
     ("Account Manager", 105000, 4),
