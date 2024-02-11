@@ -1,6 +1,5 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
-const fs = require("fs"); 
 
 const db = mysql.createConnection(
     {
@@ -74,6 +73,7 @@ const viewAllDepartments = () => {
     db.query("SELECT * FROM department", (err, departments) => {
         if (err) {
             console.log("Cannot get departments.");
+            mainMenu();
         }
         console.table(departments);
         mainMenu();
@@ -85,6 +85,7 @@ const viewAllRoles = () => {
     db.query("SELECT role.title, role.id, department.name AS department, role.salary FROM role JOIN department ON role.department_id = department.id", (err, roles) => {
         if (err) {
             console.log("Cannot get roles.");
+            mainMenu();
         }
         console.table(roles);
         mainMenu();
@@ -96,6 +97,7 @@ const viewAllEmployees = () => {
     db.query("SELECT employee.id, employee.first_name, employee.last_name, role.title AS title, department.name AS department, role.salary AS salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee AS manager ON employee.manager_id = manager.id", (err, employees) => {
         if (err) {
             console.log("Cannot get employees.");
+            mainMenu();
         } 
         console.table(employees);
         mainMenu();
@@ -114,8 +116,10 @@ const addDepartment = () => {
         .then((answer) => {
             db.query("INSERT INTO department (name) VALUES (?)", [answer.departmentName], (err, res) => {
                 if (err) {
-                    console.log("Cannot add department.");
-                } else console.log("Department added successfully!");
+                    console.log("Cannot add new department.");
+                } else {
+                    console.log("New department added successfully!");
+                }
                 mainMenu();
             });
         });
@@ -123,10 +127,112 @@ const addDepartment = () => {
 
 const addEmployee = () => {
 
+    const queryRoles = "SELECT id, title FROM role";
+    db.query(queryRoles, (err, roles) => {
+        if (err) {
+            console.log("Cannot get roles.");
+            mainMenu();
+        }
+
+    const queryEmployees = "SELECT id, CONCAT(first_name, ' ', last_name) AS manager FROM employee";
+    db.query(queryEmployees, (err, employees) => {
+        if (err) {
+            console.log("Cannot get employees.");
+            mainMenu();
+        }
+
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "firstName",
+                    message: "What is the employee's first name?",
+                },
+                {
+                    type: "input",
+                    name: "lastName",
+                    message: "What is the employee's last name?",
+                },
+                {
+                    type: "list",
+                    name: "roleId",
+                    message: "What is the employee's role?",
+                    choices: roles.map(role => ({ name: role.title, value: role.id })),
+                },
+                {
+                    type: "list",
+                    name: "managerId",
+                    message: "Select the employee's manager:",
+                    choices: [{ name: "None", value: null }, ...employees.map(employee => ({ name: employee.manager, value: employee.id }))],
+                }
+            ])
+            .then((answers) => {
+                const newEmployee = {
+                    first_name: answers.firstName,
+                    last_name: answers.lastName,
+                    role_id: answers.roleId,
+                    manager_id: answers.managerId
+                };
+                const employeeAdd = "INSERT INTO employee SET ?";
+                db.query(employeeAdd, newEmployee, (err, res) => {
+                    if (err) {
+                        console.log("Cannot add new employee.");
+                        mainMenu();
+                    } else {
+                        console.log("New employee added successfully!");
+                    }
+                    mainMenu();
+                });
+            });
+        });
+    });
 };
 
 const addEmployeeRole = () => {
+    const queryDepartments = "SELECT id, name FROM department";
+    db.query(queryDepartments, (err, departments) => {
+        if (err) {
+            console.log("Cannot get departments");
+            mainMenu();
+        }
 
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "roleTitle",
+                    message: "What role would you like to add?",
+                },
+                {
+                    type: "input",
+                    name: "roleSalary",
+                    message: "What is the salary of this new role?",
+                },
+                {
+                    type: "list",
+                    name: "departmentId",
+                    message: "What department does this role belong to?",
+                    choices: departments.map(department => ({ name: department.name, value: department.id })),
+                },
+            ])
+            .then((answers) => {
+                const newRole = {
+                    title: answers.roleTitle,
+                    salary: answers.roleSalary,
+                    department_id: answers.departmentId,
+                };
+                const roleAdd = "INSERT INTO role SET ?";
+                db.query(roleAdd, newRole, (err, res) => {
+                    if (err) {
+                        console.log("Cannot add new role.");
+                        mainMenu();
+                    } else {
+                        console.log("New role added successfully!")
+                    }
+                    mainMenu();
+                });
+            });
+        });
 };
 
 const updateEmployeeRole = () => {
