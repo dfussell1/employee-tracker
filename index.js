@@ -1,6 +1,8 @@
+// bring in required packages
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 
+// create connection to mysql database
 const db = mysql.createConnection(
     {
         host: "localhost",
@@ -9,6 +11,7 @@ const db = mysql.createConnection(
         database: "company_db",
 });
 
+// handle error if it cannot connect
 db.connect((err) => {
     if (err) {
         console.log("Cannot connect to database.");
@@ -18,6 +21,7 @@ db.connect((err) => {
     mainMenu();
 });
 
+// displays main menu options for user
 const mainMenu = () => {
     inquirer
         .prompt([
@@ -37,6 +41,7 @@ const mainMenu = () => {
                 ],
             }
         ])
+        // calls functions for whichever option user selects
         .then((answers) => {
             console.log(answers.menu);
             switch(answers.menu) {
@@ -69,6 +74,7 @@ const mainMenu = () => {
         });
 };
 
+// view all departments
 const viewAllDepartments = () => {
     db.query("SELECT * FROM department", (err, departments) => {
         if (err) {
@@ -80,7 +86,7 @@ const viewAllDepartments = () => {
     });
 };
 
-// job title, role id, department, salary
+// view all roles and display title, role id, department name, and salary
 const viewAllRoles = () => {
     db.query("SELECT role.title, role.id, department.name AS department, role.salary FROM role JOIN department ON role.department_id = department.id", (err, roles) => {
         if (err) {
@@ -92,7 +98,7 @@ const viewAllRoles = () => {
     });
 };
 
-// id, first and last name, job title, department, salaries, and managers reported to
+// view all employees and display employee id, first and last name, department name, their salary, and who they report to
 const viewAllEmployees = () => {
     db.query("SELECT employee.id, employee.first_name, employee.last_name, role.title AS title, department.name AS department, role.salary AS salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee AS manager ON employee.manager_id = manager.id", (err, employees) => {
         if (err) {
@@ -104,6 +110,7 @@ const viewAllEmployees = () => {
     });
 };
 
+// add a department to the database
 const addDepartment = () => {
     inquirer
         .prompt([
@@ -125,8 +132,10 @@ const addDepartment = () => {
         });
 };
 
+// add an employee to the database
 const addEmployee = () => {
 
+    // gets roles for role choices
     const queryRoles = "SELECT id, title FROM role";
     db.query(queryRoles, (err, roles) => {
         if (err) {
@@ -134,6 +143,7 @@ const addEmployee = () => {
             mainMenu();
         }
 
+        // gets employees for manager choices
     const queryEmployees = "SELECT id, CONCAT(first_name, ' ', last_name) AS manager FROM employee";
     db.query(queryEmployees, (err, employees) => {
         if (err) {
@@ -157,22 +167,26 @@ const addEmployee = () => {
                     type: "list",
                     name: "roleId",
                     message: "What is the employee's role?",
+                    // displays each role as a choice for the employee's role
                     choices: roles.map(role => ({ name: role.title, value: role.id })),
                 },
                 {
                     type: "list",
                     name: "managerId",
                     message: "Select the employee's manager:",
+                    // displays each employee as a choice for manager
                     choices: [{ name: "None", value: null }, ...employees.map(employee => ({ name: employee.manager, value: employee.id }))],
                 }
             ])
             .then((answers) => {
+                // new object with user's input
                 const newEmployee = {
                     first_name: answers.firstName,
                     last_name: answers.lastName,
                     role_id: answers.roleId,
                     manager_id: answers.managerId
                 };
+                // add employee to database
                 const employeeAdd = "INSERT INTO employee SET ?";
                 db.query(employeeAdd, newEmployee, (err, res) => {
                     if (err) {
@@ -188,7 +202,9 @@ const addEmployee = () => {
     });
 };
 
+// add new employee role to database
 const addEmployeeRole = () => {
+    // gets departments for department choices
     const queryDepartments = "SELECT id, name FROM department";
     db.query(queryDepartments, (err, departments) => {
         if (err) {
@@ -212,15 +228,18 @@ const addEmployeeRole = () => {
                     type: "list",
                     name: "departmentId",
                     message: "What department does this role belong to?",
+                    // displays each department as a choice
                     choices: departments.map(department => ({ name: department.name, value: department.id })),
                 },
             ])
             .then((answers) => {
+                // create new object with user's input
                 const newRole = {
                     title: answers.roleTitle,
                     salary: answers.roleSalary,
                     department_id: answers.departmentId,
                 };
+                // add role to database
                 const roleAdd = "INSERT INTO role SET ?";
                 db.query(roleAdd, newRole, (err, res) => {
                     if (err) {
@@ -235,7 +254,9 @@ const addEmployeeRole = () => {
         });
 };
 
+// update an employee's role
 const updateEmployeeRole = () => {
+    // gets roles from database for role choices
     const queryRoles = "SELECT id, title FROM role";
     db.query(queryRoles, (err, roles) => {
         if (err) {
@@ -243,6 +264,7 @@ const updateEmployeeRole = () => {
             mainMenu();
         }
     
+        // gets employees names' as choices to update employee
     const queryEmployees = "SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee";
     db.query(queryEmployees, (err, employees) => {
         if (err) {
@@ -256,16 +278,19 @@ const updateEmployeeRole = () => {
                     type: "list",
                     name: "employeeId",
                     message: "Which employee's role would you like to update?",
+                    // displays each employee as a choice to update
                     choices: employees.map(employee => ({ name: employee.name, value: employee.id })),
                 },
                 {
                     type: "list",
                     name: "roleId",
                     message: "Select the employee's new role.",
+                    // displays each role as a choice to update role
                     choices: roles.map(role => ({ name: role.title, value: role.id })),
                 },
             ])
             .then((answers) => {
+                // updates the employee's role based on user input
                 const updateRole = "UPDATE employee SET role_id = ? WHERE id = ?";
                 db.query(updateRole, [answers.roleId, answers.employeeId], (err, res) => {
                     if (err) {
