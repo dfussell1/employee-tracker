@@ -71,7 +71,7 @@ const mainMenu = () => {
 };
 
 const viewAllDepartments = () => {
-    db.query("SELECT * from department", (err, departments) => {
+    db.query("SELECT * FROM department", (err, departments) => {
         if (err) {
             console.log("Cannot get departments.");
         }
@@ -79,3 +79,24 @@ const viewAllDepartments = () => {
         mainMenu();
     });
 };
+
+const viewAllRoles = () => {
+    db.query("SELECT * FROM role", (err, roles) => {
+        if (err) {
+            console.log("Cannot get roles.");
+        }
+        console.table(roles);
+        mainMenu();
+    });
+};
+
+const viewAllEmployees = () => {
+    db.query("SELECT * FROM employee", (err, employees) => {
+        if (err) {
+            console.log("Cannot get employees.");
+        } 
+        console.table(employees);
+        mainMenu();
+    });
+};
+
