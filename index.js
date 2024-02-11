@@ -236,5 +236,47 @@ const addEmployeeRole = () => {
 };
 
 const updateEmployeeRole = () => {
+    const queryRoles = "SELECT id, title FROM role";
+    db.query(queryRoles, (err, roles) => {
+        if (err) {
+            console.log("Cannot get roles.");
+            mainMenu();
+        }
+    
+    const queryEmployees = "SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee";
+    db.query(queryEmployees, (err, employees) => {
+        if (err) {
+            console.log("Cannot get employees.");
+            mainMenu();
+        }
 
+        inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "employeeId",
+                    message: "Which employee's role would you like to update?",
+                    choices: employees.map(employee => ({ name: employee.name, value: employee.id })),
+                },
+                {
+                    type: "list",
+                    name: "roleId",
+                    message: "Select the employee's new role.",
+                    choices: roles.map(role => ({ name: role.title, value: role.id })),
+                },
+            ])
+            .then((answers) => {
+                const updateRole = "UPDATE employee SET role_id = ? WHERE id = ?";
+                db.query(updateRole, [answers.roleId, answers.employeeId], (err, res) => {
+                    if (err) {
+                        console.log("Cannot update employee's role.");
+                        mainMenu();
+                    } else {
+                        console.log("Successfully updated employee's role!");
+                    } 
+                    mainMenu();
+                });
+            });
+        });
+    });
 };
